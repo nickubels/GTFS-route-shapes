@@ -1,0 +1,7 @@
+geojson==2.4.0
+numpy==1.15.0
+pandas==0.23.3
+python-dateutil==2.7.3
+pytz==2018.5
+Shapely==1.6.4.post2
+six==1.11.0
