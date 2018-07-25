@@ -1,5 +1,5 @@
 # GTFS-route-shapes
-A simple script to generate a single geoJSON shape for each transit route in a GTFS archive.
+A simple script to generate a single geoJSON shape for each transit route in a GTFS archive. This version is based on the original written by [kotrc](https://github.com/kotrc/GTFS-route-shapes).
 
 ### Why you might need this
 In developing web and mobile applications with public transit data, we often want to display the route of a particular line on a map — let's take the MBTA Red Line in Boston as an example. The way the [GTFS](https://developers.google.com/transit/gtfs/?hl=en) standard organizes data on the map shape of transit lines, however, makes that a little tricky. There are two problems: 
