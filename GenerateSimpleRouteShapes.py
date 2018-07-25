@@ -36,21 +36,18 @@ routes = pd.read_csv('routes.txt',usecols=['route_id','agency_id','route_short_n
 trips = pd.read_csv('trips.txt',usecols=['route_id','shape_id'])
 
 # Removing the duplicated trips before joining
-print("Loading data finished. \n Step 2: Removing duplicate trips")
+print("Loading data finished. \nStep 2: Removing duplicate trips")
 trips.drop_duplicates(inplace = True)
 
 #Join routes table to trips table on route_id
-print("Removing duplicates finished \n Step 3: Joining routes and trips")
+print("Removing duplicates finished \nStep 3: Joining routes and trips")
 routes_trips = pd.merge(routes, trips, on='route_id', how='inner')
 #Join this table to shapes on shape_id
-print("Joining routes and trips finished \n Step 4: Joining shapes to trips")
+print("Joining routes and trips finished \nStep 4: Joining shapes to trips")
 routes_trips_shapes = pd.merge(routes_trips, shapes, on='shape_id',
     how='inner')
 
-#Since we've thrown out all the columns dealing with trips, there will be a lot
-#of duplicate rows. Let's get rid of those.
-routes_trips_shapes = routes_trips_shapes.drop_duplicates()
-
+print("Joining shapes to trips finished \nStep 5: Combining seperate legs into one multipart line")
 #Create a list to hold each route's shape to write them to file at the end:
 route_shape_list = list()
 
@@ -112,7 +109,7 @@ for route_id in routes_trips_shapes['route_id'].unique():
     #Turn the MultiLine into a geoJSON feature object, and add it to the list
     #of features that'll be written to file as a featurecollection at the end
     route_shape_list.append(gj.Feature(geometry=simplified_multiline,
-        properties={"route_id": route_id}))
+        properties={"route_id": str(route_id)}))
     #End of loop through all routes
 
 #Finally, write our collection of Features (one for each route) to file in
