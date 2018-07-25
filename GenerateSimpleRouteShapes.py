@@ -33,7 +33,7 @@ shapes = pd.read_csv('shapes.txt')
 # Load only the route_id, agency_id, route_short_name and route_long_name of the routes file
 routes = pd.read_csv('routes.txt',usecols=['route_id','agency_id','route_short_name','route_long_name'])
 # Load only the route_id and shape_id for the trips
-trips = pd.read_csv('trips.txt'usecols=['route_id','shape_id'])
+trips = pd.read_csv('trips.txt',usecols=['route_id','shape_id'])
 
 # Removing the duplicated trips before joining
 print("Loading data finished. \n Step 2: Removing duplicate trips")
