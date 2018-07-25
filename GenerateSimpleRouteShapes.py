@@ -1,5 +1,5 @@
-#Ben Kotrc
-#1/26/2016
+# Nick Ubels
+# Based on the original version by Ben Kotrc, 1/26/2016 on https://github.com/kotrc/GTFS-route-shapes
 #This script takes an expanded GTFS file and generates a new file,
 #route_shapes.json, that contains one geojson MultiLineString for each
 #entry in the GTFS routes.txt table. This represents the map shape for
@@ -25,17 +25,25 @@ import geojson as gj
 #shapely lets us manipulate geometric objects
 import shapely.geometry as sh
 
+print("Step 1: Starting to load data")
 
 #Read relevant GTFS tables to pandas dataframes
-stops = pd.read_csv('stops.txt')
+#Load the shapes
 shapes = pd.read_csv('shapes.txt')
-routes = pd.read_csv('routes.txt')
-stop_times = pd.read_csv('stop_times.txt')
-trips = pd.read_csv('trips.txt')
+# Load only the route_id, agency_id, route_short_name and route_long_name of the routes file
+routes = pd.read_csv('routes.txt',usecols=['route_id','agency_id','route_short_name','route_long_name'])
+# Load only the route_id and shape_id for the trips
+trips = pd.read_csv('trips.txt'usecols=['route_id','shape_id'])
+
+# Removing the duplicated trips before joining
+print("Loading data finished. \n Step 2: Removing duplicate trips")
+trips.drop_duplicates(inplace = True)
 
 #Join routes table to trips table on route_id
+print("Removing duplicates finished \n Step 3: Joining routes and trips")
 routes_trips = pd.merge(routes, trips, on='route_id', how='inner')
 #Join this table to shapes on shape_id
+print("Joining routes and trips finished \n Step 4: Joining shapes to trips")
 routes_trips_shapes = pd.merge(routes_trips, shapes, on='shape_id',
     how='inner')
 
