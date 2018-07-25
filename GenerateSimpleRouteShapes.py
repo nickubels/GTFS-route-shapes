@@ -47,24 +47,6 @@ print("Joining routes and trips finished \n Step 4: Joining shapes to trips")
 routes_trips_shapes = pd.merge(routes_trips, shapes, on='shape_id',
     how='inner')
 
-#Now we want to get rid of all the columns we don't need
-#These are the ones we want:
-colsretain = ['route_id',
-    'agency_id',
-    'route_short_name',
-    'route_long_name',
-    'shape_id',
-    'shape_pt_lat',
-    'shape_pt_lon',
-    'shape_pt_sequence',
-    'shape_dist_traveled']
-#These are the ones we have:
-colshave = routes_trips_shapes.columns.values
-#These are the ones we no longer want
-to_drop = list(set(colshave) - set(colsretain))
-#Drop them from the dataFrame
-routes_trips_shapes = routes_trips_shapes.drop(to_drop, axis=1)
-
 #Since we've thrown out all the columns dealing with trips, there will be a lot
 #of duplicate rows. Let's get rid of those.
 routes_trips_shapes = routes_trips_shapes.drop_duplicates()
