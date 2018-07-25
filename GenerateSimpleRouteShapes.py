@@ -24,8 +24,11 @@ import pandas as pd
 import geojson as gj
 #shapely lets us manipulate geometric objects
 import shapely.geometry as sh
+# Importing multiprocessing
+from multiprocessing import Process, Manager, Pool
+from functools import partial
 
-def convert_shape(L,shape):
+def convert_shape(L,route_id):
     #Get the set of shapes corresponding to this route_id
     shape_ids = set(routes_trips_shapes[routes_trips_shapes['route_id']
             == route_id]['shape_id'])
@@ -81,7 +84,7 @@ def convert_shape(L,shape):
     simplified_multiline = multiline.simplify(tolerance, preserve_topology=False)
     #Turn the MultiLine into a geoJSON feature object, and add it to the list
     #of features that'll be written to file as a featurecollection at the end
-    route_shape_list.append(gj.Feature(geometry=simplified_multiline,
+    L.append(gj.Feature(geometry=simplified_multiline,
         properties={"route_id": str(route_id)}))
 
 if __name__ == "__main__":
@@ -108,15 +111,18 @@ if __name__ == "__main__":
         how='inner')
 
     print("Joining shapes to trips finished \nStep 5: Combining seperate legs into one multipart line")
-    #Create a list to hold each route's shape to write them to file at the end:
-    route_shape_list = list()
+    
+    with Manager() as manager:
+        #Create a list to hold each route's shape to write them to file at the end:
+        route_shape_list = manager.list()
+        pool = Pool(processes = None)
+        func = partial(convert_shape,route_shape_list)
+        pool.map(func, routes_trips_shapes['route_id'].unique(),1)
+        pool.close()
+        pool.join()
 
-    #Go through each route
-    for route_id in routes_trips_shapes['route_id'].unique():
-        convert_shape(route_shape_list,route_id)
-
-    #Finally, write our collection of Features (one for each route) to file in
-    #geoJSON format, as a FeatureCollection:
-    with open('route_shapes.geojson', 'w') as outfile:
-        gj.dump(gj.FeatureCollection(route_shape_list), outfile)
+        #Finally, write our collection of Features (one for each route) to file in
+        #geoJSON format, as a FeatureCollection:
+        with open('route_shapes.geojson', 'w') as outfile:
+            gj.dump(gj.FeatureCollection(route_shape_list._getvalue()), outfile)
 
