@@ -25,34 +25,7 @@ import geojson as gj
 #shapely lets us manipulate geometric objects
 import shapely.geometry as sh
 
-print("Step 1: Starting to load data")
-
-#Read relevant GTFS tables to pandas dataframes
-#Load the shapes
-shapes = pd.read_csv('shapes.txt')
-# Load only the route_id, agency_id, route_short_name and route_long_name of the routes file
-routes = pd.read_csv('routes.txt',usecols=['route_id','agency_id','route_short_name','route_long_name'])
-# Load only the route_id and shape_id for the trips
-trips = pd.read_csv('trips.txt',usecols=['route_id','shape_id'])
-
-# Removing the duplicated trips before joining
-print("Loading data finished. \nStep 2: Removing duplicate trips")
-trips.drop_duplicates(inplace = True)
-
-#Join routes table to trips table on route_id
-print("Removing duplicates finished \nStep 3: Joining routes and trips")
-routes_trips = pd.merge(routes, trips, on='route_id', how='inner')
-#Join this table to shapes on shape_id
-print("Joining routes and trips finished \nStep 4: Joining shapes to trips")
-routes_trips_shapes = pd.merge(routes_trips, shapes, on='shape_id',
-    how='inner')
-
-print("Joining shapes to trips finished \nStep 5: Combining seperate legs into one multipart line")
-#Create a list to hold each route's shape to write them to file at the end:
-route_shape_list = list()
-
-#Go through each route
-for route_id in routes_trips_shapes['route_id'].unique():
+def convert_shape(L,shape):
     #Get the set of shapes corresponding to this route_id
     shape_ids = set(routes_trips_shapes[routes_trips_shapes['route_id']
             == route_id]['shape_id'])
@@ -110,10 +83,40 @@ for route_id in routes_trips_shapes['route_id'].unique():
     #of features that'll be written to file as a featurecollection at the end
     route_shape_list.append(gj.Feature(geometry=simplified_multiline,
         properties={"route_id": str(route_id)}))
-    #End of loop through all routes
 
-#Finally, write our collection of Features (one for each route) to file in
-#geoJSON format, as a FeatureCollection:
-with open('route_shapes.geojson', 'w') as outfile:
-    gj.dump(gj.FeatureCollection(route_shape_list), outfile)
+if __name__ == "__main__":
+    print("Step 1: Starting to load data")
+
+    #Read relevant GTFS tables to pandas dataframes
+    #Load the shapes
+    shapes = pd.read_csv('shapes.txt')
+    # Load only the route_id, agency_id, route_short_name and route_long_name of the routes file
+    routes = pd.read_csv('routes.txt',usecols=['route_id','agency_id','route_short_name','route_long_name'])
+    # Load only the route_id and shape_id for the trips
+    trips = pd.read_csv('trips.txt',usecols=['route_id','shape_id'])
+
+    # Removing the duplicated trips before joining
+    print("Loading data finished. \nStep 2: Removing duplicate trips")
+    trips.drop_duplicates(inplace = True)
+
+    #Join routes table to trips table on route_id
+    print("Removing duplicates finished \nStep 3: Joining routes and trips")
+    routes_trips = pd.merge(routes, trips, on='route_id', how='inner')
+    #Join this table to shapes on shape_id
+    print("Joining routes and trips finished \nStep 4: Joining shapes to trips")
+    routes_trips_shapes = pd.merge(routes_trips, shapes, on='shape_id',
+        how='inner')
+
+    print("Joining shapes to trips finished \nStep 5: Combining seperate legs into one multipart line")
+    #Create a list to hold each route's shape to write them to file at the end:
+    route_shape_list = list()
+
+    #Go through each route
+    for route_id in routes_trips_shapes['route_id'].unique():
+        convert_shape(route_shape_list,route_id)
+
+    #Finally, write our collection of Features (one for each route) to file in
+    #geoJSON format, as a FeatureCollection:
+    with open('route_shapes.geojson', 'w') as outfile:
+        gj.dump(gj.FeatureCollection(route_shape_list), outfile)
 
