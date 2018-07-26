@@ -59,7 +59,7 @@ def convert_shape(L,route_id):
     #longest shape to create a MultiLineString collection
     #First create an area within which we'll reject additional points
     #(this buffer--0.0001 deg--is about 30m, or about the width of Mass Ave)
-    area = multiline.buffer(0.0001)
+    area = multiline.buffer(0.000001)
     #Get the set of shapes (other than the longest one) to loop over
     shorter_shape_ids = shape_ids
     shorter_shape_ids.remove(longest)
@@ -77,7 +77,7 @@ def convert_shape(L,route_id):
             #Now add this new bit to the MultiLineString
             multiline = multiline.union(new_part)
             #Now update the testing area to include this new line
-            area = multiline.buffer(0.0001)
+            area = multiline.buffer(0.000001)
     #Now we have a shapely MultiLineString object with the lines making
     #up shape of this route. Next, simplify that object:
     tolerance = 0.00005
@@ -85,7 +85,7 @@ def convert_shape(L,route_id):
     #Turn the MultiLine into a geoJSON feature object, and add it to the list
     #of features that'll be written to file as a featurecollection at the end
     L.append(gj.Feature(geometry=simplified_multiline,
-        properties={"route_id": str(route_id)}))
+        properties={"route_id": str(route_id), "route_short_name": str(routes[routes['route_id'] == route_id]["route_short_name"].iloc[0]) ,"route_long_name": str(routes[routes['route_id'] == route_id]["route_long_name"].iloc[0]) , "agency_id":str(routes[routes['route_id'] == route_id]["agency_id"].iloc[0]) }))
 
 if __name__ == "__main__":
     print("Step 1: Starting to load data")
@@ -97,7 +97,6 @@ if __name__ == "__main__":
     routes = pd.read_csv('routes.txt',usecols=['route_id','agency_id','route_short_name','route_long_name'])
     # Load only the route_id and shape_id for the trips
     trips = pd.read_csv('trips.txt',usecols=['route_id','shape_id'])
-
     # Removing the duplicated trips before joining
     print("Loading data finished. \nStep 2: Removing duplicate trips")
     trips.drop_duplicates(inplace = True)
